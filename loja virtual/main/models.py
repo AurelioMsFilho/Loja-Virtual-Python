@@ -1,3 +1,5 @@
+import math
+
 from django.db import models
 # Create your models here.
 
@@ -8,6 +10,11 @@ class Categoria(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_ultima_atualizacao = models.DateTimeField(auto_now_add=True)
 
+
+    class Meta:
+        ordering = ('nome',)
+        verbose_name = 'categoria'
+        verbose_name_plural = 'categorias'
     def __str__(self):
         return self.nome
 
@@ -24,6 +31,16 @@ class Produto(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
     data_ultima_atualizacao = models.DateTimeField(auto_now_add=True)
     imagem = models.ImageField(upload_to='imagens-produtos', blank=True)
+
+    def save(self, *args, **kwargs):
+        print('O metodo save() foi chamado')
+        print(f'Paramatros: *args: {args}, **kwargs: {kwargs}')
+        #Executa o método save() da classe ancestral, models.Models:
+        super(Produto, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ('nome', )
+        index_together = (('id', 'slug'),)
 
     def __str__(self):
         return self.nome
@@ -47,6 +64,11 @@ class Endereco(models.Model):
     uf = models.CharField(max_length=2)
     cep = models.CharField(max_length=8)
 
+    class Meta:
+        indexes = [models.Index(fields=['cep'], name='idx_cep'),
+                   models.Index(fields=['cidade', 'uf'], name='idx_cidade_uf')
+                   ]
+
 
 class Cliente(models.Model):
     nome = models.CharField(max_length=50)
@@ -64,3 +86,14 @@ class Conta(models.Model):
     descricao = models.CharField(max_length=100)
     saldo = models.FloatField()
     superior = models.ForeignKey('self', on_delete=models.CASCADE)
+
+class Vetor(models.Model):
+    x = models.FloatField()
+    y = models.FloatField()
+    z = models.FloatField()
+
+    def modulo(self):
+        resultado = self.x **2 + self.y **2 + self.z **2
+        resultado = math.pow(resultado, 0.5)
+        return resultado
+
